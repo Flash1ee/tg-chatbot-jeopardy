@@ -6,7 +6,7 @@ class User(db.Model):
 
 class UserSession(db.Model):
     __tablename__ = "user_session"
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
     score = db.Column(db.Integer)
 
