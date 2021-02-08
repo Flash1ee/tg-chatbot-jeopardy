@@ -3,3 +3,7 @@ web:
 
 auth:
   token: $BEARER_TOKEN
+
+postgres:
+  url: postgresql://postgres:1234@localhost/postgres
+  ssl: false

@@ -3,9 +3,14 @@ import logging
 from aiohttp import web
 from aiohttp_apispec import setup_aiohttp_apispec, validation_middleware
 
-from rest.base.middlewares import error_middleware
-from rest.settings import config, BASE_DIR
+from app.base.middlewares import error_middleware
+from app.settings import config, BASE_DIR
 
+from app.store.database.accessors import PostgresAccessor
+
+from app.routes import setup_routes as setup_game_routes
+
+database_accessor = PostgresAccessor()
 
 def setup_external_libraries(app: web.Application) -> None:
     setup_aiohttp_apispec(
@@ -18,16 +23,17 @@ def setup_external_libraries(app: web.Application) -> None:
 
 
 def setup_config(app: web.Application) -> None:
+    app.config = config
     app["config"] = config
 
 
 def setup_routes(app: web.Application) -> None:
-    from rest.routes import setup_routes
-    setup_routes(app)
+    
+    setup_game_routes(app)
 
 
 def setup_accessors(app: web.Application) -> None:
-    # database_accessor.setup(app)
+    database_accessor.setup(app)
     # TelegramAccessor().setup(app)
     pass
 
