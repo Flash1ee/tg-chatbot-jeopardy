@@ -5,6 +5,7 @@ from app.base.responses import json_response, error_json_response
 import traceback
 import sys
 
+
 @web.middleware
 async def error_middleware(request, handler):
     try:
@@ -18,7 +19,8 @@ async def error_middleware(request, handler):
 
 @web.middleware
 async def auth_middleware(request, handler):
-    if 'Authorization' in response.headers.keys() and response.headers['Authorization'] != 'Bearer '. request.app.config["auth"]["token"]:
+    if request.path.startswith("/api") and not ('Authorization' in request.headers.keys() and
+            request.headers['Authorization'] != 'Bearer ' + request.app.config["auth"]["token"]):
         return error_json_response(status=401, text_status="Unauthorized", message="Unauthorized")
 
-    await handler(request)
+    return await handler(request)

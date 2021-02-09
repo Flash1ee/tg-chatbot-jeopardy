@@ -2,7 +2,7 @@ web:
   port: 8080
 
 auth:
-  token: $BEARER_TOKEN
+  token: "1234"
 
 postgres:
   url: postgresql://postgres:1234@localhost/postgres

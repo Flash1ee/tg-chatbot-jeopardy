@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from aiohttp import web
-from aiohttp_apispec import request_schema, docs, response_schema
+from aiohttp_apispec import request_schema, docs, response_schema, headers_schema
 
 from app.base.responses import json_response, error_json_response
 from app.base.schemas import BaseResponseSchema
@@ -23,6 +23,7 @@ class QuestionCA(web.View):
         tags=["Question"],
         summary="Create question",
     )
+    @headers_schema(BearerAuth)
     @request_schema(CreateQuestionRequestSchema)
     @response_schema(BaseResponseSchema, 200,
                      description="New question has been created")
@@ -39,6 +40,7 @@ class QuestionCA(web.View):
         tags=["Question"],
         summary="Get all questions",
     )
+    @headers_schema(BearerAuth)
     @response_schema(BaseResponseSchema, 200,
                      description="Questions was found")
     async def get(self):
@@ -54,6 +56,7 @@ class QuestionRUD(web.View):
         parameters=[QuestionParametrDocs],
 
     )
+    @headers_schema(BearerAuth)
     @response_schema(BaseResponseSchema, 200,
                      description="Question was found")
     async def get(self):
@@ -68,6 +71,7 @@ class QuestionRUD(web.View):
         summary="Update question",
         parameters=[QuestionParametrDocs],
     )
+    @headers_schema(BearerAuth)
     @request_schema(CreateQuestionRequestSchema)
     @response_schema(BaseResponseSchema, 200,
                      description="Question was updated")
@@ -91,6 +95,7 @@ class QuestionRUD(web.View):
         summary="Delete question",
         parameters=[QuestionParametrDocs],
     )
+    @headers_schema(BearerAuth)
     @response_schema(BaseResponseSchema, 200,
                      description="Question was deleted")
     async def delete(self):
@@ -98,9 +103,9 @@ class QuestionRUD(web.View):
         question = await models.Question.get(question_id)
         if not question:
             return error_json_response(status=404, text_status="Not found")
-        
+
         await question.delete()
-        
+
         return json_response(data=None)
 
 
@@ -118,6 +123,7 @@ class ThemeCA(web.View):
         tags=["Theme"],
         summary="Create theme",
     )
+    @headers_schema(BearerAuth)
     @request_schema(CreateThemeRequestSchema)
     @response_schema(BaseResponseSchema, 200,
                      description="New theme has been created")
@@ -129,6 +135,7 @@ class ThemeCA(web.View):
         tags=["Theme"],
         summary="Get all themes",
     )
+    @headers_schema(BearerAuth)
     @response_schema(BaseResponseSchema, 200,
                      description="Themes was found")
     async def get(self):
@@ -143,6 +150,7 @@ class ThemeRUD(web.View):
         summary="Get themes",
         parameters=[ThemeParametrDocs],
     )
+    @headers_schema(BearerAuth)
     @response_schema(BaseResponseSchema, 200,
                      description="Theme was found")
     async def get(self):
@@ -157,6 +165,7 @@ class ThemeRUD(web.View):
         summary="Update theme",
         parameters=[ThemeParametrDocs],
     )
+    @headers_schema(BearerAuth)
     @request_schema(CreateThemeRequestSchema)
     @response_schema(BaseResponseSchema, 200,
                      description="Theme was updated")
@@ -174,6 +183,7 @@ class ThemeRUD(web.View):
         summary="Delete theme",
         parameters=[ThemeParametrDocs],
     )
+    @headers_schema(BearerAuth)
     @response_schema(BaseResponseSchema, 200,
                      description="Theme was deleted")
     async def delete(self):
@@ -184,3 +194,18 @@ class ThemeRUD(web.View):
 
         await theme.delete()
         return json_response(data=None)
+
+
+class QuestionsTheme(web.View):
+    @docs(
+        tags=["Question", "Theme"],
+        summary="Get all questions in theme",
+    )
+    @headers_schema(BearerAuth)
+    @response_schema(BaseResponseSchema, 200,
+                     description="Questions was found")
+    async def get(self):
+        theme_id: int = int(self.request.match_info['theme'])
+        questions = await models.Question.query.where(models.Question.theme_id == theme_id).gino.all()
+        return json_response(
+            data=QuestionResponseSchema().dump(questions, many=True))

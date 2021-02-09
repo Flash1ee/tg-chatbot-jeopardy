@@ -1,5 +1,6 @@
 import ssl
 
+import asyncio
 from aiohttp import web
 from sqlalchemy import func
 
@@ -10,15 +11,22 @@ class PostgresAccessor:
 
         self.models = models
         self.db = None
+    
+    async def check_connection_and_create_tables(self):
+            await self.create_session()
+            await self.db.gino.create_all()
+            await self.stop_session()
 
     def setup(self, application: web.Application) -> None:
         application.on_startup.append(self._on_connect)
         application.on_cleanup.append(self._on_disconnect)
 
-    async def _on_connect(self, app: web.Application):
+       
+        
+    async def create_session(self) -> None:
         from app.store.database.models import db
-
-        self.config = app.config["postgres"]
+        from app.settings import  config
+        self.config = config["postgres"]
         if self.config["ssl"]:
             ctx = ssl.create_default_context(cafile="")
             ctx.check_hostname = False
@@ -27,8 +35,14 @@ class PostgresAccessor:
         else:
             await db.set_bind(self.config["url"])
         self.db = db
+
+    async def _on_connect(self, app: web.Application):
+        await self.create_session()
         app.db = self
 
-    async def _on_disconnect(self, _) -> None:
+    async def stop_session(self) -> None:
         if self.db is not None:
             await self.db.pop_bind().close()
+
+    async def _on_disconnect(self, _) -> None:
+        await self.stop_session()
