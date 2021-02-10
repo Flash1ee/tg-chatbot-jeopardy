@@ -1,0 +1,12 @@
+{
+    "debug": false,
+    "bot": {
+        "token": "",
+        "token_demo": ""
+    },
+    "database": {
+        "url": "",
+        "url_demo": "",
+        "create": false
+    }
+}
