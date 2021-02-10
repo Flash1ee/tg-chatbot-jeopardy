@@ -1,6 +1,6 @@
 from aiohttp import web
 
-from app.views import *
+from app.views import QuestionCA, QuestionRUD, ThemeCA, ThemeRUD, QuestionsTheme
 
 
 def setup_routes(app: web.Application) -> None:

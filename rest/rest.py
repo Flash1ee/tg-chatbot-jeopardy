@@ -39,7 +39,6 @@ def setup_routes(app: web.Application) -> None:
 
 def setup_accessors(app: web.Application) -> None:
     database_accessor.setup(app)
-    pass
 
 
 def setup_middlewares(app: web.Application) -> None:
@@ -47,7 +46,8 @@ def setup_middlewares(app: web.Application) -> None:
     app.middlewares.append(validation_middleware)
 
 
-def setup_logging(_: web.Application) -> None:
+def setup_logging(app: web.Application) -> None:
+    app.logging = logging
     logging.basicConfig(level=logging.INFO)
 
 

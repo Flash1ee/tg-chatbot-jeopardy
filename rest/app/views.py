@@ -76,11 +76,13 @@ class QuestionRUD(web.View):
         question = await models.Question.get(question_id)
         if not question:
             raise web.HTTPNotFound()
+
+        data = self.request["data"]
         await question.update(
-            content=self.request["data"]["content"],
-            correct_answer=self.request["data"]["correct_answer"],
-            score=self.request["data"]["score"],
-            theme_id=self.request["data"]["theme_id"],
+            content=data["content"],
+            correct_answer=data["correct_answer"],
+            score=data["score"],
+            theme_id=data["theme_id"],
         ).apply()
 
         return json_response(data=QuestionResponseSchema().dump(question))

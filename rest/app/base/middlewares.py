@@ -12,5 +12,5 @@ async def error_middleware(request, handler):
     except web.HTTPException as ex:
         return json_response(status=ex.status, text_status=ex.text, data={})
     except Exception as e:
-        print(traceback.format_exc())
+        request.app.logging.error(traceback.format_exc())
         return json_response(status=500, text_status=str(e), data={})
