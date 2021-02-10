@@ -4,7 +4,7 @@ import logging
 from aiohttp import web
 from aiohttp_apispec import setup_aiohttp_apispec, validation_middleware
 
-from app.base.middlewares import error_middleware, auth_middleware
+from app.base.middlewares import error_middleware
 from app.settings import config, BASE_DIR
 
 from app.store.database.accessors import PostgresAccessor
@@ -16,6 +16,7 @@ database_accessor = PostgresAccessor()
 asyncio.get_event_loop().run_until_complete(
     database_accessor.check_connection_and_create_tables()
 )
+
 
 def setup_external_libraries(app: web.Application) -> None:
     setup_aiohttp_apispec(
@@ -38,14 +39,12 @@ def setup_routes(app: web.Application) -> None:
 
 def setup_accessors(app: web.Application) -> None:
     database_accessor.setup(app)
-    # TelegramAccessor().setup(app)
     pass
 
 
 def setup_middlewares(app: web.Application) -> None:
     app.middlewares.append(error_middleware)
     app.middlewares.append(validation_middleware)
-    # app.middlewares.append(auth_middleware)
 
 
 def setup_logging(_: web.Application) -> None:
@@ -66,4 +65,3 @@ app = web.Application()
 if __name__ == "__main__":
     setup_app(app)
     web.run_app(app, port=config["web"]["port"])
-    

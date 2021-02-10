@@ -15,8 +15,7 @@ def error_json_response(
 ) -> web.Response:
     if not message and text_status:
         message = text_status
- 
+
     return web.json_response(
-        status=status, data={"data": data,
-                             "status": text_status, "message": message}
+        status=status, data={"data": data, "status": text_status, "message": message}
     )

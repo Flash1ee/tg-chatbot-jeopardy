@@ -11,21 +11,20 @@ class PostgresAccessor:
 
         self.models = models
         self.db = None
-    
+
     async def check_connection_and_create_tables(self):
-            await self.create_session()
-            await self.db.gino.create_all()
-            await self.stop_session()
+        await self.create_session()
+        await self.db.gino.create_all()
+        await self.stop_session()
 
     def setup(self, application: web.Application) -> None:
         application.on_startup.append(self._on_connect)
         application.on_cleanup.append(self._on_disconnect)
 
-       
-        
     async def create_session(self) -> None:
         from app.store.database.models import db
-        from app.settings import  config
+        from app.settings import config
+
         self.config = config["postgres"]
         if self.config["ssl"]:
             ctx = ssl.create_default_context(cafile="")
