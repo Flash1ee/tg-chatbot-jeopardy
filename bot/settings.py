@@ -1,5 +1,4 @@
 import pathlib
-# import yaml
 import json
 
 BASE_DIR = pathlib.Path(__file__).parent.parent

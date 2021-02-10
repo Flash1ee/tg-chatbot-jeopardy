@@ -1,40 +1,22 @@
-"""Сборка всего приложения."""
 import logging
+from aiogram import Bot, Dispatcher, executor, types
+import bot.config as cfg
 
-from vkbottle.bot import Bot, Message
-from vkbottle.tools.dev_tools.loop_wrapper import LoopWrapper
-
-from bot.blueprints import bps
-# from src.config import BOT_TOKEN
-# from src.initialize import setup_db
-# from src.middlewares.no_bot_middleware import NoBotMiddleware
-from bot.config import TOKEN
-
+TOKEN = cfg.TOKEN
+# Объект бота
+bot = Bot(token=TOKEN)
+# Диспетчер для бота
+dp = Dispatcher(bot)
+# Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
 
 
-def init_bot():
-    """Фабрика для бота."""
-    bot_ = Bot(token=TOKEN)
-    setup_middlewares(bot_)
-    setup_blueprints(bot_)
-
-    return bot_
+# Хэндлер на команду /test1
+@dp.message_handler(commands="test1")
+async def cmd_test1(message: types.Message):
+    await message.reply("Test 1")
 
 
-def setup_blueprints(bot_: Bot):
-    """Инициализация blueprints."""
-    for bp in bps:
-        bp.load(bot_)
-
-
-def setup_middlewares(bot_: Bot):
-    """Инициализация middlewares."""
-    # bot_.labeler.message_view.register_middleware(NoBotMiddleware())
-
-
-bot = init_bot()
-
-
-
+if __name__ == "__main__":
+    # Запуск бота
+    executor.start_polling(dp, skip_updates=True)
