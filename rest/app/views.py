@@ -78,12 +78,7 @@ class QuestionRUD(web.View):
             raise web.HTTPNotFound()
 
         data = self.request["data"]
-        await question.update(
-            content=data["content"],
-            correct_answer=data["correct_answer"],
-            score=data["score"],
-            theme_id=data["theme_id"],
-        ).apply()
+        await question.update(**data).apply()
 
         return json_response(data=QuestionResponseSchema().dump(question))
 
@@ -187,7 +182,7 @@ class ThemeRUD(web.View):
 
 class QuestionsTheme(web.View):
     @docs(
-        tags=["Question", "Theme"],
+        tags=["Theme"],
         summary="Get all questions in theme",
     )
     @headers_schema(BearerAuth)

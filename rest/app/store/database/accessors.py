@@ -1,8 +1,6 @@
 import ssl
 
-import asyncio
 from aiohttp import web
-from sqlalchemy import func
 
 
 class PostgresAccessor:
@@ -11,11 +9,6 @@ class PostgresAccessor:
 
         self.models = models
         self.db = None
-
-    async def check_connection_and_create_tables(self):
-        await self.create_session()
-        await self.db.gino.create_all()
-        await self.stop_session()
 
     def setup(self, application: web.Application) -> None:
         application.on_startup.append(self._on_connect)

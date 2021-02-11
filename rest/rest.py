@@ -11,12 +11,6 @@ from app.store.database.accessors import PostgresAccessor
 
 from app.routes import setup_routes as setup_game_routes
 
-database_accessor = PostgresAccessor()
-
-asyncio.get_event_loop().run_until_complete(
-    database_accessor.check_connection_and_create_tables()
-)
-
 
 def setup_external_libraries(app: web.Application) -> None:
     setup_aiohttp_apispec(
@@ -30,7 +24,6 @@ def setup_external_libraries(app: web.Application) -> None:
 
 def setup_config(app: web.Application) -> None:
     app.config = config
-    app["config"] = config
 
 
 def setup_routes(app: web.Application) -> None:
@@ -38,7 +31,7 @@ def setup_routes(app: web.Application) -> None:
 
 
 def setup_accessors(app: web.Application) -> None:
-    database_accessor.setup(app)
+    PostgresAccessor().setup(app)
 
 
 def setup_middlewares(app: web.Application) -> None:
