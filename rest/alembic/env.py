@@ -28,8 +28,8 @@ target_metadata = db
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-# hardcode
-url = "postgresql://flashie:1111@localhost/gino"
+from app.settings import config
+url = config["postgres"]["url"]
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
