@@ -1,12 +1,11 @@
 {
-    "debug": false,
-    "bot": {
-        "token": "",
-        "token_demo": ""
-    },
-    "database": {
-        "url": "",
-        "url_demo": "",
-        "create": false
-    }
+  "debug": false,
+  "bot": {
+    "token": "",
+    "token_demo": ""
+  },
+  "postgres": {
+    "url": "postgresql://postgres:1234@localhost/postgres",
+    "ssl": false
+  }
 }

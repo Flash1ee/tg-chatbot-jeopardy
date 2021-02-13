@@ -1,8 +1,15 @@
-
 class PostgresAccessor:
     def __init__(self) -> None:
-        from app.game.models import User, UserSession, Session, Round, RoundQuestion, Question, Theme, ThemeRound
-
+        from app.game.models import (
+            User,
+            UserSession,
+            Session,
+            Round,
+            RoundQuestion,
+            Question,
+            Theme,
+            ThemeRound,
+        )
 
         self.user = User
         self.session = Session

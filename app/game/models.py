@@ -14,11 +14,19 @@ class UserSession(db.Model):
     score = db.Column(db.Integer)
 
 
+class SessionStatus(enum.Enum):
+    active = 0
+    finished = 1
+
 class Session(db.Model):
     __tablename__ = "session"
     id = db.Column(db.Integer, primary_key=True)
     chat_id = db.Column(db.Integer)
-    status = db.Column(db.Integer)
+    status = db.Column(
+        db.Enum(SessionStatus),
+        nullable=False,
+        default=SessionStatus.active,
+    )
 
 
 class RoundStatus(enum.Enum):
