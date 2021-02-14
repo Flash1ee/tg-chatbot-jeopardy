@@ -33,6 +33,9 @@ class GameHelper:
     themes: List[m.Theme] = None
     round_questions: List[m.RoundQuestion] = None
 
+    last_rq: m.RoundQuestion = None
+    last_answer: m.Answer = None
+
     loaded_all = False
 
     def __init__(self, chat_id: int, db: gino) -> None:
@@ -53,7 +56,6 @@ class GameHelper:
         if not self.rq:
             return
 
-        
         await self.getQuestion()
         if not self.question:
             return
@@ -66,7 +68,7 @@ class GameHelper:
             return GameState.not_active
         if not self.round:
             return GameState.error
-        if not self.rq:
+        if self.rq and self.rq.status == m.RoundQuestionStatus.active:
             return GameState.wait_answer
         return GameState.wait_question
 
@@ -203,16 +205,18 @@ class GameHelper:
 
         is_correct = await self.check_answer(answer, self.question.correct_answer)
 
-        answer = await m.Answer.create(
+        self.last_answer = await m.Answer.create(
             status=is_correct,
             rq_id=self.rq.id,
             user_id=user_id,
         )
 
         if is_correct == is_correct.correct:
-            self.rq = await self.rq.update(status=m.RoundQuestionStatus.answered).apply()
+            await self.rq.update(status=m.RoundQuestionStatus.answered).apply()
+            self.last_rq  = self.rq
+            self.rq = None
             # @todo: add score
-        return answer
+        return self.last_answer
 
     async def createSession(self) -> m.Session:
         self.session = await m.Session.create(
@@ -260,3 +264,46 @@ class GameHelper:
                 table[theme.id]["answers"][score] = True
 
         return table
+
+    async def getLastQuestion(self) -> m.Question:
+        if self.last_rq:
+            return self.last_rq
+        if not self.round:
+            await self.GetRound()
+
+        self.last_rq = (
+            await m.RoundQuestion.query
+            .where(m.RoundQuestion.round_id == self.round.id)
+            .order_by(m.RoundQuestion.id.desc())
+            .gino.first()
+        )
+        return self.last_rq
+
+    async def getLastAnswer(self) -> m.Question:
+        if self.last_answer:
+            return self.last_answer
+
+        await self.getLastQuestion()
+
+        self.last_answer = (
+            await m.Answer.query.where(m.Answer.rq_id == self.last_rq.id)
+            .order_by(m.Answer.id.desc())
+            .gino.first()
+        )
+
+        return self.last_answer
+
+    async def choosingUser(self) -> int:
+        if not self.last_rq:
+            await self.getLastQuestion()
+        if not self.last_rq:
+            #  @todo choose random user
+            return None
+        if self.last_rq.status == m.RoundQuestionStatus.answered:
+            if not self.last_answer:
+                await self.getLastAnswer()
+            return self.last_answer.user_id
+        else:
+            #  @todo choose with lowerest rating
+            return None
+    
