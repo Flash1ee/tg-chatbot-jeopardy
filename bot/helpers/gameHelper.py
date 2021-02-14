@@ -16,6 +16,7 @@ class GameState(enum.Enum):
 
 class GameHelper:
     themes_count = 3
+    question_scores = range(1, 6)
 
     chat_id: int = 0
     db: gino = None
@@ -194,9 +195,48 @@ class GameHelper:
             # @todo: add score
 
         return answer
-    
+
     async def createSession(self) -> m.Session:
         return await m.Session.create(
-            chat_id = self.chat_id,
-            status = m.SessionStatus.active
+            chat_id=self.chat_id,
+            status=m.SessionStatus.active
         )
+
+    async def getRoundQuestions(self, round: m.Round = None) -> List[m.Question]:
+        if not round:
+            round = await self.GetRound()
+        print(round, round.id, round.session_id)
+        
+        return (
+            await m.Question.query.select_from(
+                m.Question.join(
+                    m.RoundQuestion,
+                    m.RoundQuestion.question_id == m.Question.id)
+            )
+            .where(m.RoundQuestion.round_id == round.id)
+            .where(m.RoundQuestion.status == m.RoundQuestionStatus.answered)
+            .gino.all()
+        )
+
+    async def table(self, round: m.Round = None):
+        if not round:
+            round = await self.GetRound()
+
+        themes = await self.GetThemes()
+        questions: List[m.Question] = await self.getRoundQuestions()
+
+        table = dict()
+
+        for theme in themes:
+            table[theme.id] = {
+                "title": theme.title,
+                "id": theme.id,
+                "answers": dict()
+            }
+            for score in self.question_scores:
+                table[theme.id]["answers"][score] = False
+            for question in questions:
+                score = question.score
+                table[theme.id]["answers"][score] = True
+
+        return table
