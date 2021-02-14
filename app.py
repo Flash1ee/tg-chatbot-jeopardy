@@ -6,10 +6,10 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 
 from bot.handlers.wait import register_handlers_session
-import bot.config as cfg
+from bot.config import TOKEN, DATA
 from bot.commands import set_commands
+from bot.keyboard import get_keyboard
 
-TOKEN = cfg.TOKEN
 
 async def main():
     # Объект бота
@@ -23,6 +23,8 @@ async def main():
 
     await set_commands(bot)
     await dp.start_polling()
+    keyboard_handlers(dp)
+    
 
 
 if __name__ == "__main__":
@@ -30,4 +32,12 @@ if __name__ == "__main__":
     asyncio.run(main())
 
 
+def keyboard_handlers(dp: Dispatcher): 
+    count_themes = 6
+    count_questions = 5
 
+    for i in range(count_themes):
+        for j in range(count_questions):
+            dp.callback_query_handler(text = f"{i}_{j}_question")
+            async def send_question(call: types.CallbackQuery):
+                await call.message.answer(text = "Ваш вопрос")

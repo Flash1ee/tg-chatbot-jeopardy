@@ -1,6 +1,7 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from bot.middlewares.game import generate_round
 
 
 class WaitState(StatesGroup):
@@ -11,6 +12,7 @@ class WaitState(StatesGroup):
 async def game_start(message: types.Message):
     await message.answer("Игра начинается")
     await WaitState.session_active.set()
+    await generate_round(message)
 
 async def game_end(message: types.Message,  state: FSMContext):
     await state.finish()
