@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import gino
 import enum
 
@@ -32,7 +32,7 @@ class GameHelper:
         if not round:
             return GameState.error
 
-        question = await self.getQuestion()
+        question = await self.getRoundQuestion(round=round)
         if question:
             return GameState.wait_answer
         return GameState.wait_question
@@ -55,15 +55,27 @@ class GameHelper:
             .gino.first()
         )
 
-    async def getQuestion(self, round: m.Round = None) -> m.RoundQuestion:
+    async def getRoundQuestion(self, round: m.Round = None) -> m.RoundQuestion:
         if not round:
             round = await self.GetRound()
         if not round:
             return None
         return (
-            await m.RoundQuestion.query.where(m.RoundQuestion == round.id)
+            await m.RoundQuestion.query.where(m.RoundQuestion.round_id == round.id)
             .where(m.RoundQuestion.status == m.RoundQuestionStatus.active)
             .gino.first()
+        )
+
+    async def getQuestion(
+        self, rq: m.RoundQuestion = None
+    ) -> Tuple[m.Question, m.RoundQuestion]:
+        if not rq:
+            rq = await self.getRoundQuestion()
+        if not rq:
+            return None
+        return (
+            await m.Question.query.where(m.Question.id == rq.question_id).gino.first(),
+            rq,
         )
 
     async def GetThemes(self, round=None) -> List[m.Theme]:
@@ -137,3 +149,54 @@ class GameHelper:
         await self.SetRandomThemes(round_id=new_round.id)
 
         return new_round
+
+    async def createRoundQuestion(
+        self, score: int, theme_id: int, round: m.Round = None
+    ) -> Tuple[m.Question, m.RoundQuestion]:
+        if not round:
+            round = await self.GetRound()
+
+        question = await self.GetRandomQuestion(score=score, theme_id=theme_id)
+        rq = await m.RoundQuestion.create(
+            question_id=question.id,
+            round_id=round.id,
+            status=m.RoundQuestionStatus.active,
+        )
+
+        return question, rq
+
+    async def check_answer(self, answer: str, corect: str) -> m.AnswerStatus:
+        # @todo: use mystem3
+        if " ".join(answer.lower().split()) == " ".join(
+            corect.lower().split()
+        ):
+            return m.AnswerStatus.correct
+        return m.AnswerStatus.incorrect
+
+    async def answerQuestion(
+        self, answer: str, user_id: int, qrq: Tuple[m.Question, m.RoundQuestion] = None
+    ) -> m.Answer:
+        if not qrq:
+            qrq = await self.getQuestion()
+
+        question, rq = qrq
+
+        is_correct = await self.check_answer(answer, question.correct_answer)
+
+        answer = await m.Answer.create(
+            status=is_correct,
+            rq_id=rq.id,
+            user_id=user_id,
+        )
+
+        if is_correct == is_correct.correct:
+            await rq.update(status=m.RoundQuestionStatus.answered).apply()
+            # @todo: add score
+
+        return answer
+    
+    async def createSession(self) -> m.Session:
+        return await m.Session.create(
+            chat_id = self.chat_id,
+            status = m.SessionStatus.active
+        )
