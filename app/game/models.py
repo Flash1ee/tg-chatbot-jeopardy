@@ -66,6 +66,24 @@ class RoundQuestion(db.Model):
     created_at = db.Column(db.DateTime)
 
 
+class AnswerStatus(enum.Enum):
+    correct = 0
+    incorrect = 1
+
+class Answer(db.Model):
+    __tablename__ = "answer"
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(
+        db.Enum(AnswerStatus),
+        nullable=False,
+        default=AnswerStatus.correct,
+    )
+    rq_id = db.Column(db.Integer, db.ForeignKey(RoundQuestion.id))
+    user_id = db.Column(db.Integer, db.ForeignKey(User.user_id))
+    created_at = db.Column(db.DateTime)
+
+
+
 class Question(db.Model):
     __tablename__ = "question"
     id = db.Column(db.Integer, primary_key=True)
