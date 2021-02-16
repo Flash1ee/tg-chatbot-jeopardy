@@ -2,6 +2,8 @@ from typing import List, Tuple
 import gino
 import enum
 
+from sqlalchemy.sql.schema import PrimaryKeyConstraint
+
 import app.game.models as m
 from sqlalchemy import func
 
@@ -44,7 +46,13 @@ class GameHelper:
 
     async def update_data(self):
         self.loaded_all = True
-        self.session, self.round, self.rq, self.q, self.round_questions = None, None, None, None, None
+        self.session, self.round, self.rq, self.q, self.round_questions = (
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
         await self.GetSession()
         if not self.session:
             return
@@ -105,7 +113,9 @@ class GameHelper:
     async def getQuestion(self) -> Tuple[m.Question, m.RoundQuestion]:
         if not self.rq:
             await self.getRoundQuestion()
-        self.question = await m.Question.query.where(m.Question.id == self.rq.question_id).gino.first()
+        self.question = await m.Question.query.where(
+            m.Question.id == self.rq.question_id
+        ).gino.first()
         return (self.question, self.rq)
 
     async def GetThemes(self) -> List[m.Theme]:
@@ -192,14 +202,11 @@ class GameHelper:
 
     async def check_answer(self, answer: str, corect: str) -> m.AnswerStatus:
         # @todo: use mystem3
-        if " ".join(answer.lower().split()) == " ".join(
-            corect.lower().split()
-        ):
+        if " ".join(answer.lower().split()) == " ".join(corect.lower().split()):
             return m.AnswerStatus.correct
         return m.AnswerStatus.incorrect
 
-    async def answerQuestion(
-            self, answer: str, user_id: int) -> m.Answer:
+    async def answerQuestion(self, answer: str, user_id: int) -> m.Answer:
         if not self.question:
             await self.getQuestion()
 
@@ -213,15 +220,14 @@ class GameHelper:
 
         if is_correct == is_correct.correct:
             await self.rq.update(status=m.RoundQuestionStatus.answered).apply()
-            self.last_rq  = self.rq
+            self.last_rq = self.rq
             self.rq = None
             # @todo: add score
         return self.last_answer
 
     async def createSession(self) -> m.Session:
         self.session = await m.Session.create(
-            chat_id=self.chat_id,
-            status=m.SessionStatus.active
+            chat_id=self.chat_id, status=m.SessionStatus.active
         )
         return self.session
 
@@ -232,8 +238,8 @@ class GameHelper:
         self.round_questions = (
             await m.Question.query.select_from(
                 m.Question.join(
-                    m.RoundQuestion,
-                    m.RoundQuestion.question_id == m.Question.id)
+                    m.RoundQuestion, m.RoundQuestion.question_id == m.Question.id
+                )
             )
             .where(m.RoundQuestion.round_id == self.round.id)
             .where(m.RoundQuestion.status == m.RoundQuestionStatus.answered)
@@ -255,11 +261,13 @@ class GameHelper:
             table[theme.id] = {
                 "title": theme.title,
                 "id": theme.id,
-                "answers": dict()
+                "answers": dict(),
             }
             for score in self.question_scores:
                 table[theme.id]["answers"][score] = False
-            for question in self.round_questions:
+            for question in filter(
+                lambda q: q.theme_id == theme.id, self.round_questions
+            ):
                 score = question.score
                 table[theme.id]["answers"][score] = True
 
@@ -272,8 +280,7 @@ class GameHelper:
             await self.GetRound()
 
         self.last_rq = (
-            await m.RoundQuestion.query
-            .where(m.RoundQuestion.round_id == self.round.id)
+            await m.RoundQuestion.query.where(m.RoundQuestion.round_id == self.round.id)
             .order_by(m.RoundQuestion.id.desc())
             .gino.first()
         )
@@ -306,4 +313,3 @@ class GameHelper:
         else:
             #  @todo choose with lowerest rating
             return None
-    
