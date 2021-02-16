@@ -20,8 +20,9 @@ class GameState(enum.Enum):
 class GameHelper:
 
     #  Config
-    themes_count = 3
-    question_scores = range(1, 6)
+    themes_count = 2
+    question_scores = range(1, 3)
+    round_counts = 2
 
     # init values
     chat_id: int = 0
@@ -58,8 +59,8 @@ class GameHelper:
         if not self.session:
             return
         await self.GetRound()
-        if not self.session:
-            return
+        if not self.round:
+            await self.startRound()
 
         await self.getRoundQuestion()
         if not self.rq:
@@ -171,6 +172,9 @@ class GameHelper:
             await self.round.update(
                 status=m.RoundStatus.finished,
             ).apply()
+            if self.round.number >= self.round_counts:
+                await self.session.update(status=m.SessionStatus.finished).apply()
+                return None
 
         return await self.createRound(number)
 
