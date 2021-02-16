@@ -102,7 +102,7 @@ class GameHelper:
 
     async def getRoundQuestion(self) -> m.RoundQuestion:
         if not self.round:
-            self.GetRound()
+            await self.GetRound()
 
         self.rq = (
             await m.RoundQuestion.query.where(m.RoundQuestion.round_id == self.round.id)
