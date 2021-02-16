@@ -3,31 +3,36 @@ from aiogram.utils.exceptions import MessageNotModified
 from aiogram.utils.callback_data import CallbackData
 from aiogram import types, Dispatcher
 
-'''
+"""
 Некрасивый пример клавиатуры для вопросов
 #todo переделать под бд
-'''
+"""
+
+
 async def get_keyboard(round_tasks: dict):
     # Генерация клавиатуры.
-    buttons = []
-    theme_num = 0
-    question_num = 0
-    for key, value in round_tasks.items():
-        question_num = 0
-        buttons.append(types.InlineKeyboardButton(
-            text=key, callback_data=f"{theme_num}_theme"))
-        for data in value:
-            price = data["price"]
-            question = data["question"]
-            if question == "":
-                buttons.append(types.InlineKeyboardButton(
-                    text="", callback_data="empty"))
-            else:
-                buttons.append(types.InlineKeyboardButton(
-                    text=price, callback_data=f"{theme_num}_{question_num}_question"))
-            question_num += 1
-        theme_num += 1
 
-    keyboard = types.InlineKeyboardMarkup(row_width=question_num + 1)
-    keyboard.add(*buttons)
+    keyboard = types.InlineKeyboardMarkup()
+
+    for key, value in round_tasks.items():
+        keyboard.row(
+            types.InlineKeyboardButton(
+                text=value["title"], callback_data=f"{key}_theme"
+            )
+        )
+
+        buttons = []
+        for price, is_used in value["answers"].items():
+            if is_used:
+                buttons.append(
+                    types.InlineKeyboardButton(text="-", callback_data="empty")
+                )
+            else:
+                buttons.append(
+                    types.InlineKeyboardButton(
+                        text=str(price), callback_data=f"{key}_{price}_question"
+                    )
+                )
+        keyboard.row(*buttons)
+
     return keyboard
