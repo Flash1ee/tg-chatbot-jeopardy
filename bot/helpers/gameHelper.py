@@ -3,6 +3,7 @@ import gino
 import enum
 
 import app.game.models as m
+
 from sqlalchemy import func
 
 
@@ -206,7 +207,7 @@ class GameHelper:
         if not round:
             round = await self.GetRound()
         print(round, round.id, round.session_id)
-        
+
         return (
             await m.Question.query.select_from(
                 m.Question.join(

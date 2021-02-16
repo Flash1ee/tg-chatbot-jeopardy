@@ -1,22 +1,17 @@
 class PostgresAccessor:
     def __init__(self) -> None:
-        from app.game.models import (
-            User,
-            UserSession,
-            Session,
-            Round,
-            RoundQuestion,
-            Question,
-            Theme,
-            ThemeRound,
+        from app.game import models
+
+        self.models = models
+        self.db = None
+
+    async def create_session(self) -> None:
+        from app.store.database.models import db
+        await db.set_bind(
+            "postgresql://postgres:1111@localhost/gino"
         )
+        self.db = db
 
-        self.user = User
-        self.session = Session
-
-        self.user_session = UserSession
-        self.round = Round
-        self.round_question = RoundQuestion
-        self.question = Question
-        self.Theme = Theme
-        self.ThemeRound = ThemeRound
+    async def stop_session(self) -> None:
+        if self.db is not None:
+            await self.db.pop_bind().close()

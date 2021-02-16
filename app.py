@@ -1,22 +1,36 @@
 import logging
+import asyncio
+
 from aiogram import Bot, Dispatcher, executor, types
-import bot.config as cfg
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import BotCommand
 
-TOKEN = cfg.TOKEN
-# Объект бота
+from bot.config import TOKEN
+from bot.keyboard import get_keyboard
+from bot.handlers.register_handlers import register_handlers_session
+
+from bot.middlewares.db import PostgressMiddleware
+
+
+
 bot = Bot(token=TOKEN)
-# Диспетчер для бота
-dp = Dispatcher(bot)
-# Включаем логирование, чтобы не пропустить важные сообщения
-logging.basicConfig(level=logging.INFO)
+dp = Dispatcher(bot, storage=MemoryStorage())
 
+async def main():
+    # Объект бота
+    # Диспетчер для бота
+    # Включаем логирование, чтобы не пропустить важные сообщения
+    logging.basicConfig(level=logging.INFO)
 
-# Хэндлер на команду /test1
-@dp.message_handler(commands="test1")
-async def cmd_test1(message: types.Message):
-    await message.reply("Test 1")
+    await register_handlers_session(dp)
+
+    await dp.start_polling()
 
 
 if __name__ == "__main__":
     # Запуск бота
-    executor.start_polling(dp, skip_updates=True)
+    dp.middleware.setup(PostgressMiddleware())
+    asyncio.run(main())
+
+
+
