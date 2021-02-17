@@ -20,8 +20,8 @@ class GameState(enum.Enum):
 class GameHelper:
 
     #  Config
-    themes_count = 2
-    question_scores = range(1, 3)
+    themes_count = 3
+    question_scores = range(1, 6)
     round_counts = 2
 
     # init values
@@ -45,6 +45,13 @@ class GameHelper:
     def __init__(self, chat_id: int, db: gino) -> None:
         self.chat_id = chat_id
         self.db = db
+
+    @staticmethod
+    async def registerUser(user_id: int):
+        try:
+            await m.User.create(user_id=user_id)
+        except:
+            pass
 
     async def update_data(self):
         self.loaded_all = True

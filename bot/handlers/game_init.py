@@ -22,7 +22,7 @@ async def game_status(message: types.Message):
             ans = "Что-то поломалось " + str(state)
         await message.answer(ans)
     else:
-        await message.answer("Ваша сессия зарегистирована")
+        await message.answer("Игра не активна")
 
 
 async def session_start(message: types.Message):
