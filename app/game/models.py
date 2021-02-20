@@ -18,6 +18,7 @@ class SessionStatus(enum.Enum):
     active = 0
     finished = 1
 
+
 class Session(db.Model):
     __tablename__ = "session"
     id = db.Column(db.Integer, primary_key=True)
@@ -70,6 +71,7 @@ class AnswerStatus(enum.Enum):
     correct = 0
     incorrect = 1
 
+
 class Answer(db.Model):
     __tablename__ = "answer"
     id = db.Column(db.Integer, primary_key=True)
@@ -81,7 +83,6 @@ class Answer(db.Model):
     rq_id = db.Column(db.Integer, db.ForeignKey(RoundQuestion.id))
     user_id = db.Column(db.Integer, db.ForeignKey(User.user_id))
     created_at = db.Column(db.DateTime)
-
 
 
 class Question(db.Model):

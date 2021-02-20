@@ -1,3 +1,4 @@
+from bot.middlewares.user import UserMiddleware
 import logging
 import asyncio
 
@@ -12,9 +13,9 @@ from bot.handlers.register_handlers import register_handlers_session
 from bot.middlewares.db import PostgressMiddleware
 
 
-
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
+
 
 async def main():
     # Объект бота
@@ -30,7 +31,5 @@ async def main():
 if __name__ == "__main__":
     # Запуск бота
     dp.middleware.setup(PostgressMiddleware())
+    dp.middleware.setup(UserMiddleware())
     asyncio.run(main())
-
-
-
