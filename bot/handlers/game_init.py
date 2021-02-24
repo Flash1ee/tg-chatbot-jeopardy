@@ -1,11 +1,56 @@
+from datetime import datetime
+from typing import List
 from aiogram import Dispatcher, types
 from aiogram.types import message
 from bot.helpers.gameHelper import GameHelper, GameState
 from app.store.database.models import db
 import app.game.models as m
 import bot.keyboard as kb
+import asyncio
 
-# /start_game
+
+def db_init_decorator(func):
+    async def db_init_decorator_wrapper(*args):
+        from app.store.database.accessor import PostgresAccessor
+
+        pg = PostgresAccessor()
+        await pg.create_session()
+
+        await func(*args, db=None)
+
+        await pg.stop_session()
+
+    return db_init_decorator_wrapper
+
+
+async def bg_task(s, func, *args):
+    await asyncio.sleep(s)
+    await func(*args)
+
+
+# @db_init_decorator
+# async def load_timers(db):
+#     sessions: List[m.Session] = await (m.Session.query.select_from(
+#         m.Session.join(
+#             m.Round, m.Round.session_id == m.Session.id
+#         )
+#     )
+#         .select_from(
+#         m.Round.join(
+#             m.RoundQuestion, m.RoundQuestion.round_id == m.Round.id
+#         )
+#     )
+#         .where(m.RoundQuestion.status == m.RoundQuestionStatus.answered.active)
+#         .gino.all()
+#     )
+
+#     for session in sessions:
+#         game = GameHelper(session.chat_id)
+#         await game.getQuestion()
+#         (datetime.now() - game.rq.created_at).seconds
+
+#         asyncio.create_task(bg_task(game.time_to_answer.seconds,
+#                                     check_timeout_answer, call=None, game=game))
 
 
 async def game_status(message: types.Message):
@@ -64,6 +109,7 @@ async def show_themes(message: types.Message):
     mes = "Раунд №" + str(game.round.number) + "\n"
 
     user_id = await game.choosingUser()
+    user = None
     if user_id:
         user = await message.bot.get_chat_member(
             chat_id=message.chat.id, user_id=user_id
@@ -71,6 +117,30 @@ async def show_themes(message: types.Message):
         mes += "Отвечает " + user.user.mention + "\n"
     mes += "\n Выберите тему\n"
     await message.answer(mes, reply_markup=my_kb)
+
+    if not user:
+        return
+
+    asyncio.create_task(
+        bg_task(game.time_to_choose.seconds, check_timeout_choose, message, game, user)
+    )
+
+
+@db_init_decorator
+async def check_timeout_choose(message, game, user, db):
+    game.db = db
+    last_rq_id = game.last_rq.id
+
+    await game.update_data()
+    await game.getLastQuestion()
+
+    if (
+        await game.GetState() == GameState.wait_question
+        and game.last_rq.id == last_rq_id
+    ):
+        await message.answer(
+            user.user.mention + ", время вышло. Теперь любой выбирает тему."
+        )
 
 
 async def game_end(message: types.Message):
@@ -82,15 +152,10 @@ async def game_end(message: types.Message):
     )
 
 
-async def question_choose(call: types.CallbackQuery):
-
-    from app.store.database.accessor import PostgresAccessor
-
-    pg = PostgresAccessor()
-    await pg.create_session()
-
+@db_init_decorator
+async def question_choose(call: types.CallbackQuery, db):
     chat_id = call.message.chat.id
-    game = GameHelper(chat_id, db=pg.db)
+    game = GameHelper(chat_id, db=db)
 
     action = call.data.split("_")
 
@@ -122,14 +187,32 @@ async def question_choose(call: types.CallbackQuery):
 
     await call.bot.send_message(chat_id=chat_id, text=mes)
 
-    await pg.stop_session()
+    asyncio.create_task(
+        bg_task(game.time_to_answer.seconds, check_timeout_answer, call, game)
+    )
+
+
+@db_init_decorator
+async def check_timeout_answer(call, game, db):
+    rq_id = game.rq.id
+    game.db = db
+
+    await game.update_data()
+
+    if await game.GetState() == GameState.wait_answer and game.rq.id == rq_id:
+        await call.bot.send_message(
+            chat_id=game.chat_id,
+            text="Время вышло. Никто не ответил на вопрос правильно.",
+        )
+        await game.stopQuestion()
+        await show_themes(call.message)
 
 
 async def answer(message: types.Message):
     game = GameHelper(message.chat.id, db=db)
 
     q, qr = await game.getQuestion()
-    print(q.correct_answer)
+
     user_answer = message.text.replace("/answer", "")
     answer = await game.answerQuestion(answer=user_answer, user_id=message.from_user.id)
 
@@ -137,6 +220,17 @@ async def answer(message: types.Message):
 
     if answer.status == m.AnswerStatus.correct:
         await show_themes(message)
+
+
+async def stop_game(message: types.Message):
+    game = GameHelper(message.chat.id, db=db)
+
+    state = await game.GetState()
+    if state != GameState.not_active:
+        await game.stop()
+        await message.answer("Игра остановлена", reply=True)
+    else:
+        await message.answer("Вы не играете", reply=True)
 
 
 async def bot_action(message: types.Message):

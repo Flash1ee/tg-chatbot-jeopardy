@@ -1,5 +1,6 @@
 from app.store.database.models import db
 import enum
+import datetime
 
 
 class User(db.Model):
@@ -64,7 +65,7 @@ class RoundQuestion(db.Model):
     )
     round_id = db.Column(db.Integer, db.ForeignKey("round.id"))
     question_id = db.Column(db.Integer, db.ForeignKey("question.id"))
-    created_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
 
 
 class AnswerStatus(enum.Enum):
@@ -82,7 +83,7 @@ class Answer(db.Model):
     )
     rq_id = db.Column(db.Integer, db.ForeignKey(RoundQuestion.id))
     user_id = db.Column(db.Integer, db.ForeignKey(User.user_id))
-    created_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now)
 
 
 class Question(db.Model):
