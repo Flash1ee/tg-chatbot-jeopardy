@@ -116,9 +116,10 @@ async def question_choose(call: types.CallbackQuery):
     mes = "Вопрос №" + str(theme_id) + "-" + str(score) + "\n"
 
     question, rq = await game.createRoundQuestion(score=score, theme_id=theme_id)
-
+    # question_time = 30
     mes += "Вопрос :" + question.content + "\n"
     mes += "Ответ :" + question.correct_answer + "\n"
+    # mes += "На ответ " + question_time + "секунд\n"
 
     await call.bot.send_message(chat_id=chat_id, text=mes)
 

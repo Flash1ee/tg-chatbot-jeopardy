@@ -8,7 +8,7 @@ class PostgresAccessor:
     async def create_session(self) -> None:
         from app.store.database.models import db
         await db.set_bind(
-            "postgresql://postgres:1111@localhost/gino"
+            "postgresql://postgres:1111@localhost:5433/postgres"
         )
         self.db = db
 
