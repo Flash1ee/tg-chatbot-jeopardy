@@ -21,7 +21,7 @@ async def main():
     # Объект бота
     # Диспетчер для бота
     # Включаем логирование, чтобы не пропустить важные сообщения
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.WARNING)
 
     await register_handlers_session(dp)
 

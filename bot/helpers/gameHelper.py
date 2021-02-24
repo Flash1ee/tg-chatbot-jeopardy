@@ -1,6 +1,8 @@
 from typing import List, Tuple
 import gino
 import enum
+import datetime
+from sqlalchemy import or_
 
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
 
@@ -21,8 +23,11 @@ class GameHelper:
 
     #  Config
     themes_count = 3
-    question_scores = range(1, 6)
+    question_scores = range(1, 2)
     round_counts = 2
+
+    time_to_answer = datetime.timedelta(seconds=30)
+    time_to_choose = datetime.timedelta(seconds=30)
 
     # init values
     chat_id: int = 0
@@ -237,6 +242,25 @@ class GameHelper:
             # @todo: add score
         return self.last_answer
 
+    async def stopQuestion(self):
+        if not self.question:
+            await self.getQuestion()
+
+        await self.rq.update(status=m.RoundQuestionStatus.timeout).apply()
+        self.last_rq = self.rq
+        self.rq = None
+        return
+
+    async def stop(self):
+        if not self.session:
+            await self.GetSession()
+
+        if not self.session:
+            return
+
+        await self.session.update(status=m.SessionStatus.finished).apply()
+        return
+
     async def createSession(self) -> m.Session:
         self.session = await m.Session.create(
             chat_id=self.chat_id, status=m.SessionStatus.active
@@ -254,7 +278,12 @@ class GameHelper:
                 )
             )
             .where(m.RoundQuestion.round_id == self.round.id)
-            .where(m.RoundQuestion.status == m.RoundQuestionStatus.answered)
+            .where(
+                or_(
+                    m.RoundQuestion.status == m.RoundQuestionStatus.answered,
+                    m.RoundQuestion.status == m.RoundQuestionStatus.timeout,
+                )
+            )
             .gino.all()
         )
 
@@ -315,13 +344,15 @@ class GameHelper:
     async def choosingUser(self) -> int:
         if not self.last_rq:
             await self.getLastQuestion()
-        if not self.last_rq:
-            #  @todo choose random user
-            return None
-        if self.last_rq.status == m.RoundQuestionStatus.answered:
+
+        if (
+            self.last_rq
+            and self.last_rq.status == m.RoundQuestionStatus.answered
+            and (datetime.datetime.now() - self.last_rq.created_at)
+            < self.time_to_choose
+        ):
             if not self.last_answer:
                 await self.getLastAnswer()
             return self.last_answer.user_id
         else:
-            #  @todo choose with lowerest rating
             return None
