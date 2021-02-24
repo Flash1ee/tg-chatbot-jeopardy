@@ -20,9 +20,8 @@ class PostgresAccessor:
 
     async def create_session(self) -> None:
         from app.store.database.models import db
-        await db.set_bind(
-            "postgresql://postgres:1234@localhost/postgres"
-        )
+
+        await db.set_bind("postgresql://postgres:1234@localhost/postgres")
         self.db = db
 
     async def stop_session(self) -> None:
@@ -42,27 +41,29 @@ async def do():
     game = GameHelper(chat_id=-135, db=pg.db)
     await game.update_data()
 
-    state = await game.GetState() 
-    print (state)
+    state = await game.GetState()
+    print(state)
     if state == GameState.not_active:
         print("no_active -> startt")
         await game.createSession()
-    
+
     round = await game.GetRound()
 
     if not round:
         print("no round -> creating")
         round = await game.startRound()
-        
+
     themes = await game.GetThemes()
-    print('id=', round.id, 'num=', round.number, "status=", round.status)
+    print("id=", round.id, "num=", round.number, "status=", round.status)
     print(list(map(lambda x: x.title, themes)))
 
     for theme in themes:
         for i in range(1, 6):
             r = random.random() > 0.6
             if r:
-                question, rq = await game.createRoundQuestion(score=i, theme_id=theme.id)
+                question, rq = await game.createRoundQuestion(
+                    score=i, theme_id=theme.id
+                )
                 print(question.content, question.correct_answer)
 
                 print(await game.GetState())
@@ -76,7 +77,9 @@ async def do():
                 print(answer.status, await game.GetState())
 
                 user_c = random.randint(10001, 10005)
-                answer = await game.answerQuestion(user_id=user_c, answer=question.correct_answer)
+                answer = await game.answerQuestion(
+                    user_id=user_c, answer=question.correct_answer
+                )
                 print("user_c=", user_c, answer.status, await game.GetState())
 
                 print("Choosing=", await game.choosingUser())
@@ -89,5 +92,6 @@ async def do():
     # print(json.dumps(await game.table()))
     await game.startRound()
     await pg.stop_session()
+
 
 asyncio.get_event_loop().run_until_complete(do())

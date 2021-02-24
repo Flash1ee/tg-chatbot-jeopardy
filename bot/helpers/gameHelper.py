@@ -4,8 +4,6 @@ import enum
 import datetime
 from sqlalchemy import or_
 
-from sqlalchemy.sql.schema import PrimaryKeyConstraint
-
 import app.game.models as m
 
 from sqlalchemy import func

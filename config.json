@@ -1,0 +1,10 @@
+{
+  "debug": false,
+  "bot": {
+    "token": "1608287168:AAG_cov1Sh81sKT_Rh9rJZ3o8p065sicW1U"
+  },
+  "postgres": {
+    "url": "postgresql://postgres:1234@localhost/postgres",
+    "ssl": false
+  }
+}
