@@ -1,6 +1,5 @@
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types.message import Message
-from bot.helpers.gameHelper import GameHelper
 from aiogram import types
 
 
@@ -9,4 +8,6 @@ class UserMiddleware(BaseMiddleware):
         super().__init__()
 
     async def on_pre_process_message(self, message: Message, data):
+        from bot.helpers.gameHelper import GameHelper
+
         await GameHelper.registerUser(message.from_user.id)

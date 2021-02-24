@@ -1,4 +1,3 @@
-from bot.handlers.game_init import stop_game
 from aiogram import Dispatcher
 from aiogram import types
 
@@ -12,6 +11,7 @@ async def register_handlers_session(dp: Dispatcher):
         question_choose,
         answer,
         bot_action,
+        stop_game,
     )
 
     dp.register_message_handler(game_status, commands="status")
