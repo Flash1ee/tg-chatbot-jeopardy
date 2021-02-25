@@ -1,4 +1,4 @@
-from app.store.database.models import db
+from bot.app.store.database.models import db
 import enum
 import datetime
 

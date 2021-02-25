@@ -1,14 +1,14 @@
-from bot.config import cfg
+from bot.bot.config import cfg
 
 class PostgresAccessor:
     def __init__(self) -> None:
-        # from app.game import models
+        from bot.app.game import models
 
-        # self.models = models
+        self.models = models
         self.db = None
 
     async def create_session(self) -> None:
-        from app.store.database.models import db
+        from bot.app.store.database.models import db
 
         await db.set_bind(cfg["postgres"]["url"])
         self.db = db

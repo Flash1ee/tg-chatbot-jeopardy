@@ -1,12 +1,12 @@
-from app.store.database.accessor import PostgresAccessor
+from bot.app.store.database.accessor import PostgresAccessor
 import logging
 import asyncio
 
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from bot.config import TOKEN
-from bot.handlers.register_handlers import register_handlers_session
+from bot.bot.config import TOKEN
+from bot.bot.handlers.register_handlers import register_handlers_session
 
 
 bot = Bot(token=TOKEN)
@@ -32,7 +32,7 @@ async def main():
 
 if __name__ == "__main__":
     # Запуск бота
-    from bot.middlewares.user import UserMiddleware
+    from bot.bot.middlewares.user import UserMiddleware
 
     dp.middleware.setup(UserMiddleware())
     asyncio.run(main())

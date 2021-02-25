@@ -1,8 +1,9 @@
 from aiogram import types
-from bot.helpers.gameHelper import GameHelper, GameState
-from app.store.database.models import db
-import app.game.models as m
-import bot.keyboard as kb
+
+from bot.bot.helpers.gameHelper import GameHelper, GameState
+from bot.app.store.database.models import db
+import bot.app.game.models as m
+import bot.bot.keyboard as kb
 import asyncio
 
 
@@ -241,7 +242,9 @@ async def stop_game(message: types.Message):
 
     state = await game.GetState()
     if state != GameState.not_active:
-        await game.stop()
+        users = await game.stop()
+        # todo user_id -> nickname and print stats
+
         await message.answer("Игра остановлена", reply=True)
     else:
         await message.answer("Вы не играете", reply=True)

@@ -3,7 +3,7 @@ from aiogram import types
 
 
 async def register_handlers_session(dp: Dispatcher):
-    from bot.handlers.game_init import (
+    from bot.bot.handlers.game_init import (
         game_end,
         game_status,
         session_start,

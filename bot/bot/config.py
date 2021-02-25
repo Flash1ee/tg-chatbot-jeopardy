@@ -1,3 +1,3 @@
-from bot.settings import cfg
+from bot.bot.settings import cfg
 
 TOKEN = cfg["bot"]["token"]

@@ -4,7 +4,7 @@ import enum
 import datetime
 from sqlalchemy import or_
 
-import app.game.models as m
+import bot.app.game.models as m
 
 from sqlalchemy import func
 
@@ -20,7 +20,7 @@ class GameState(enum.Enum):
 class GameHelper:
     #  Config
     themes_count = 3
-    question_scores = range(1, 6)
+    question_scores = range(1, 2)
     round_counts = 2
 
     time_to_answer = datetime.timedelta(seconds=10)
@@ -94,8 +94,8 @@ class GameHelper:
     async def GetSession(self) -> m.Session:
         self.session = (
             await m.Session.query.where(m.Session.chat_id == self.chat_id)
-            .where(m.Session.status == m.SessionStatus.active)
-            .gino.first()
+                .where(m.Session.status == m.SessionStatus.active)
+                .gino.first()
         )
         return self.session
 
@@ -105,8 +105,8 @@ class GameHelper:
 
         self.round = (
             await m.Round.query.where(m.Round.session_id == self.session.id)
-            .where(m.Round.status == m.RoundStatus.active)
-            .gino.first()
+                .where(m.Round.status == m.RoundStatus.active)
+                .gino.first()
         )
         return self.round
 
@@ -116,8 +116,8 @@ class GameHelper:
 
         self.rq = (
             await m.RoundQuestion.query.where(m.RoundQuestion.round_id == self.round.id)
-            .where(m.RoundQuestion.status == m.RoundQuestionStatus.active)
-            .gino.first()
+                .where(m.RoundQuestion.status == m.RoundQuestionStatus.active)
+                .gino.first()
         )
         return self.rq
 
@@ -137,8 +137,8 @@ class GameHelper:
             await m.Theme.query.select_from(
                 m.Theme.join(m.ThemeRound, m.Theme.id == m.ThemeRound.theme_id)
             )
-            .where(m.ThemeRound.round_id == self.round.id)
-            .gino.all()
+                .where(m.ThemeRound.round_id == self.round.id)
+                .gino.all()
         )
 
         return self.themes
@@ -146,16 +146,16 @@ class GameHelper:
     async def GetRandomThemes(self) -> List[m.Theme]:
         return (
             await m.Theme.query.order_by(func.random())
-            .limit(self.themes_count)
-            .gino.all()
+                .limit(self.themes_count)
+                .gino.all()
         )
 
     async def GetRandomQuestion(self, score: int, theme_id: int) -> m.Question:
         return (
             await m.Question.query.where(m.Question.theme_id == theme_id)
-            .where(m.Question.score == score)
-            .order_by(func.random())
-            .gino.first()
+                .where(m.Question.score == score)
+                .order_by(func.random())
+                .gino.first()
         )
 
     async def SetRandomThemes(self) -> List[m.Theme]:
@@ -200,7 +200,7 @@ class GameHelper:
         return self.round
 
     async def createRoundQuestion(
-        self, score: int, theme_id: int
+            self, score: int, theme_id: int
     ) -> Tuple[m.Question, m.RoundQuestion]:
         if not self.round:
             await self.GetRound()
@@ -245,8 +245,8 @@ class GameHelper:
 
         user = (
             await m.UserSession.query.where(m.UserSession.user_id == user_id)
-            .where(m.UserSession.session_id == self.session.id)
-            .gino.first()
+                .where(m.UserSession.session_id == self.session.id)
+                .gino.first()
         )
         if not user:
             add_user = await m.UserSession.create(
@@ -283,10 +283,14 @@ class GameHelper:
             await self.GetSession()
 
         if not self.session:
-            return
+            return None
 
         await self.session.update(status=m.SessionStatus.finished).apply()
-        return
+        users_session = await self.getScores()
+        user_score = {}
+        for i in users_session:
+            user_score.update({i.user_id: i.score})
+        return user_score
 
     async def createSession(self) -> m.Session:
         self.session = await m.Session.create(
@@ -304,14 +308,14 @@ class GameHelper:
                     m.RoundQuestion, m.RoundQuestion.question_id == m.Question.id
                 )
             )
-            .where(m.RoundQuestion.round_id == self.round.id)
-            .where(
+                .where(m.RoundQuestion.round_id == self.round.id)
+                .where(
                 or_(
                     m.RoundQuestion.status == m.RoundQuestionStatus.answered,
                     m.RoundQuestion.status == m.RoundQuestionStatus.timeout,
                 )
             )
-            .gino.all()
+                .gino.all()
         )
 
         return self.round_questions
@@ -334,7 +338,7 @@ class GameHelper:
             for score in self.question_scores:
                 table[theme.id]["answers"][score] = False
             for question in filter(
-                lambda q: q.theme_id == theme.id, self.round_questions
+                    lambda q: q.theme_id == theme.id, self.round_questions
             ):
                 score = question.score
                 table[theme.id]["answers"][score] = True
@@ -349,8 +353,8 @@ class GameHelper:
 
         self.last_rq = (
             await m.RoundQuestion.query.where(m.RoundQuestion.round_id == self.round.id)
-            .order_by(m.RoundQuestion.id.desc())
-            .gino.first()
+                .order_by(m.RoundQuestion.id.desc())
+                .gino.first()
         )
         return self.last_rq
 
@@ -362,8 +366,8 @@ class GameHelper:
 
         self.last_answer = (
             await m.Answer.query.where(m.Answer.rq_id == self.last_rq.id)
-            .order_by(m.Answer.id.desc())
-            .gino.first()
+                .order_by(m.Answer.id.desc())
+                .gino.first()
         )
 
         return self.last_answer
@@ -373,10 +377,10 @@ class GameHelper:
             await self.getLastQuestion()
 
         if (
-            self.last_rq
-            and self.last_rq.status == m.RoundQuestionStatus.answered
-            and (datetime.datetime.now() - self.last_rq.created_at)
-            < self.time_to_choose
+                self.last_rq
+                and self.last_rq.status == m.RoundQuestionStatus.answered
+                and (datetime.datetime.now() - self.last_rq.created_at)
+                < self.time_to_choose
         ):
             if not self.last_answer:
                 await self.getLastAnswer()
