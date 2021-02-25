@@ -4,7 +4,7 @@
     "token": ""
   },
   "postgres": {
-    "url": "postgresql://postgres:1234@localhost/postgres",
+    "url": "postgresql://postgres:1234@db/postgres",
     "ssl": false
   }
 }

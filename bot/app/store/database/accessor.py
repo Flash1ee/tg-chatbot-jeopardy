@@ -1,3 +1,5 @@
+from bot.config import cfg
+
 class PostgresAccessor:
     def __init__(self) -> None:
         # from app.game import models
@@ -8,9 +10,7 @@ class PostgresAccessor:
     async def create_session(self) -> None:
         from app.store.database.models import db
 
-        await db.set_bind(
-            "postgresql://postgres:1234@localhost/postgres"
-        )
+        await db.set_bind(cfg["postgres"]["url"])
         self.db = db
         # self.conn = await engine.acquire()
 
