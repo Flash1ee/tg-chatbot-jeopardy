@@ -10,6 +10,8 @@ class User(db.Model):
 
 class UserSession(db.Model):
     __tablename__ = "user_session"
+
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
     session_id = db.Column(db.Integer, db.ForeignKey("session.id"))
     score = db.Column(db.Integer, default=0)

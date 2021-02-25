@@ -12,6 +12,7 @@ async def register_handlers_session(dp: Dispatcher):
         answer,
         bot_action,
         stop_game,
+        stats,
     )
 
     dp.register_message_handler(game_status, commands="status")
@@ -20,5 +21,6 @@ async def register_handlers_session(dp: Dispatcher):
     dp.register_message_handler(game_end, commands="end")
     dp.register_message_handler(answer, commands="answer")
     dp.register_message_handler(stop_game, commands="stop")
+    dp.register_message_handler(stats, commands="stats")
     dp.register_message_handler(bot_action, content_types=[types.ContentType.TEXT])
     dp.register_callback_query_handler(question_choose)

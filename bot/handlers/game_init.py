@@ -6,26 +6,11 @@ import bot.keyboard as kb
 import asyncio
 
 
-def db_init_decorator(func):
-    async def db_init_decorator_wrapper(*args):
-        from app.store.database.accessor import PostgresAccessor
-
-        pg = PostgresAccessor()
-        await pg.create_session()
-
-        await func(*args, db=None)
-
-        await pg.stop_session()
-
-    return db_init_decorator_wrapper
-
-
 async def bg_task(s, func, *args):
     await asyncio.sleep(s)
     await func(*args)
 
 
-# @db_init_decorator
 # async def load_timers(db):
 #     sessions: List[m.Session] = await (m.Session.query.select_from(
 #         m.Session.join(
@@ -79,6 +64,38 @@ async def session_start(message: types.Message):
     await show_themes(message)
 
 
+async def stats(message: types.Message):
+    game = GameHelper(message.chat.id, db)
+
+    state = await game.GetState()
+    if state == GameState.not_active:
+        await message.answer("А вы не играете)")
+        return
+
+    scores = await game.getScores()
+
+    score_users = [
+        (
+            score,
+            await message.bot.get_chat_member(
+                chat_id=message.chat.id, user_id=score.user_id
+            ),
+        )
+        for score in scores
+    ]
+
+    leaders = "\n".join(
+        [
+            "{:} - {:}".format(user.user.full_name, score.score)
+            for score, user in score_users
+        ]
+    )
+
+    await message.answer("Таблица рейтинга: \n" + leaders)
+
+    pass
+
+
 async def show_themes(message: types.Message):
     game = GameHelper(message.chat.id, db)
     state = await game.GetState()
@@ -93,7 +110,6 @@ async def show_themes(message: types.Message):
             if not is_used:
                 have_question += 1
     if not have_question:
-
         round = await game.startRound()
         if not round:
             await message.answer("Игра окончена!")
@@ -119,15 +135,18 @@ async def show_themes(message: types.Message):
         return
 
     asyncio.create_task(
-        bg_task(game.time_to_choose.seconds, check_timeout_choose, message, game, user)
+        bg_task(
+            game.time_to_choose.seconds,
+            check_timeout_choose,
+            message,
+            game,
+            user,
+            game.last_rq.id,
+        )
     )
 
 
-@db_init_decorator
-async def check_timeout_choose(message, game, user, db):
-    game.db = db
-    last_rq_id = game.last_rq.id
-
+async def check_timeout_choose(message, game, user, last_rq_id):
     await game.update_data()
     await game.getLastQuestion()
 
@@ -149,10 +168,9 @@ async def game_end(message: types.Message):
     )
 
 
-@db_init_decorator
-async def question_choose(call: types.CallbackQuery, db):
+async def question_choose(call: types.CallbackQuery):
     chat_id = call.message.chat.id
-    game = GameHelper(chat_id, db=db)
+    game = GameHelper(chat_id)
 
     action = call.data.split("_")
 
@@ -178,10 +196,9 @@ async def question_choose(call: types.CallbackQuery, db):
     mes = "Вопрос №" + str(theme_id) + "-" + str(score) + "\n"
 
     question, rq = await game.createRoundQuestion(score=score, theme_id=theme_id)
-    # question_time = 30
+
     mes += "Вопрос :" + question.content + "\n"
     mes += "Ответ :" + question.correct_answer + "\n"
-    # mes += "На ответ " + question_time + "секунд\n"
 
     await call.bot.send_message(chat_id=chat_id, text=mes)
 
@@ -190,8 +207,7 @@ async def question_choose(call: types.CallbackQuery, db):
     )
 
 
-@db_init_decorator
-async def check_timeout_answer(call, game, db):
+async def check_timeout_answer(call, game):
     rq_id = game.rq.id
     game.db = db
 
