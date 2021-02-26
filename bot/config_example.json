@@ -1,0 +1,10 @@
+{
+  "debug": false,
+  "bot": {
+    "token": ""
+  },
+  "postgres": {
+    "url": "postgresql://postgres:1234@db/postgres",
+    "ssl": false
+  }
+}
