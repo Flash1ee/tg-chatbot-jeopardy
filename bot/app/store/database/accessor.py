@@ -1,5 +1,6 @@
 from bot.config import cfg
 
+
 class PostgresAccessor:
     def __init__(self) -> None:
         # from app.game import models

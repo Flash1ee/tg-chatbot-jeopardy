@@ -69,7 +69,7 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         5,
         'ЭТОТ рассказ Эдгара По затрагивает тему переселения душ',
-        '«Морелла»',
+        'Морелла',
         2
     );
 INSERT INTO theme (id, title)
@@ -180,7 +180,7 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         5,
         'Он — знаменитый французский океанограф, путешественник и «пионер» подводных киносъемок и исследований, изобретатель акваланга и автор многих книг Назвать его фамилию слишком просто, попробуйте вспомнить название его знаменитого судна',
-        '«Каллипсо»',
+        'Каллипсо',
         5
     );
 INSERT INTO theme (id, title)
@@ -226,7 +226,7 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         1,
         'В детстве многие из нас зачитывались этим романом Роберта Льюиса Стивенсона',
-        '«Чёрная стрела»',
+        'Чёрная стрела',
         7
     );
 INSERT INTO question (score, content, correct_answer, theme_id)
@@ -254,7 +254,7 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         5,
         'О её путешествии нам поведал Джанни Родари',
-        '«Путешествие Голубой Стрелы»',
+        'Путешествие Голубой Стрелы',
         7
     );
 INSERT INTO theme (id, title)
@@ -321,14 +321,14 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         4,
         'После «Будильника», «Служу Советскому Союзу» и тд в час дня был он',
-        '«Сельский час»',
+        'Сельский час',
         9
     );
 INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         5,
         'Так называлась первая пластинка группы «Машина времени», вышедшая на фирме «Мелодия» в 1986 г',
-        '«В добрый час!»',
+        'В добрый час!',
         9
     );
 INSERT INTO theme (id, title)
@@ -459,7 +459,7 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         4,
         'Именно в этот балет Чайковский ввел инструмент челесту',
-        '«ЩЕЛКУНЧИК»',
+        'ЩЕЛКУНЧИК',
         13
     );
 INSERT INTO question (score, content, correct_answer, theme_id)
@@ -482,7 +482,7 @@ INSERT INTO question (score, content, correct_answer, theme_id)
 VALUES (
         2,
         'Редкий случай когда герой боевиков не просто пишет сценарий и снимается в главной роли, но еще и номнируется на Оскар и как актер и как режиссер Фильм назовите',
-        '«Рокки»',
+        'Рокки',
         14
     );
 INSERT INTO question (score, content, correct_answer, theme_id)

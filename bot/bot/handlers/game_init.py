@@ -160,12 +160,15 @@ async def check_timeout_choose(message, game, user, last_rq_id):
 
 
 async def game_end(message: types.Message):
-    game = GameHelper(chat_id=message.chat.id, db=db)
-    print(await game.GetSession())
+    # game = GameHelper(chat_id=message.chat.id, db=db)
+    # print(await game.GetSession())
+    # await final_stats(message)
+    # for task in asyncio.Task.all_tasks():
+    #     task.cancel()
     await message.answer("Игра завершена. Спасибо за участие")
-    await message.answer(
-        "Статистику украли цыгане", reply_markup=types.ReplyKeyboardRemove()
-    )
+    # await message.answer(
+    #     "Статистику украли цыгане", reply_markup=types.ReplyKeyboardRemove()
+    # )
 
 
 async def question_choose(call: types.CallbackQuery):
@@ -241,8 +244,9 @@ async def stop_game(message: types.Message):
 
     state = await game.GetState()
     if state != GameState.not_active:
+        await stats(message)
         await game.stop()
-        await message.answer("Игра остановлена", reply=True)
+        await message.answer("Игра завершена, спасибо за участие", reply=True)
     else:
         await message.answer("Вы не играете", reply=True)
 

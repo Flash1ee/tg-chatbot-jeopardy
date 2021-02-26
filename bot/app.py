@@ -17,6 +17,8 @@ async def main():
     # Объект бота
     # Диспетчер для бота
     # Включаем логирование, чтобы не пропустить важные сообщения
+    from app.game import models
+
     logging.basicConfig(level=logging.WARNING)
 
     pg = PostgresAccessor()
