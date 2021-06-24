@@ -1,4 +1,4 @@
-# vk-chatbot-jeopardy
+# tg-chatbot-jeopardy
 
 ## Описание
 
